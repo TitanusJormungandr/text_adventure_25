@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Windows;
@@ -12,7 +14,11 @@ public class InputManager : MonoBehaviour
     public InputField userInput; // the input field object
     public Text inputText; // part of the input field where user enters response
     public Text placeHolderText; // part of the input field for initial placeholder text
-    public Button abutton;
+    //public Button abutton;
+
+    //1st step to creating and using delegates
+    public delegate void Restart();
+    public event Restart OnRestart;
     
     private string story; // holds the story to display
     private List<string> commands = new List<string>(); //valid user commands
@@ -31,6 +37,7 @@ public class InputManager : MonoBehaviour
     {
         commands.Add("go");
         commands.Add("get");
+        commands.Add("restart");
 
         userInput.onEndEdit.AddListener(GetInput); //now calls GetInput
         //abutton.onClick.AddListener(DoSomething);
@@ -65,7 +72,8 @@ public class InputManager : MonoBehaviour
                     }
                     else
                     {
-                        UpdateStory("Exit does not exist. Try again.");
+                        //added the "is locked" response
+                        UpdateStory("Exit does not exist or is locked. Try again.");
                     }
                 }
                 else if (parts[0] == "get")
@@ -80,6 +88,11 @@ public class InputManager : MonoBehaviour
                         UpdateStory("Sorry, " + parts[1] + " does not exist in this room.");
                     }
 
+                }
+                else if (parts[0] == "restart")
+                {
+                    if (OnRestart != null) //if anyone is listening
+                        OnRestart();
                 }
                 //UpdateStory(msg);
             }

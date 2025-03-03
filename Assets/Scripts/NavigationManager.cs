@@ -24,13 +24,21 @@ public class NavigationManager : MonoBehaviour
     }
     void Start()
     {
-        Debug.Log(startingRoom.description);
+        InputManager.instance.OnRestart += ResetGame;
+        //Debug.Log(startingRoom.description);
+        //toKeyNorth.isHidden = true;
+        //currentRoom = startingRoom;
+        //Unpack();
+        ResetGame();
+    }
+    void ResetGame()
+    {
         toKeyNorth.isHidden = true;
         currentRoom = startingRoom;
         Unpack();
     }
 
-   void Unpack()
+    void Unpack()
     {
         string description = currentRoom.description;
         exitRooms.Clear();
@@ -50,12 +58,25 @@ public class NavigationManager : MonoBehaviour
     {
         if(exitRooms.ContainsKey(direction)) //if that exit exists
         {
-            currentRoom = exitRooms[direction];
-            InputManager.instance.UpdateStory("You go " + direction);
-            Unpack();
-            return true;
+            if(!getExit(direction).isLocked || GameManager.instance.inventory.Contains("key"))
+            {
+                currentRoom = exitRooms[direction];
+                InputManager.instance.UpdateStory("You go " + direction);
+                Unpack();
+                return true;
+            }
         }
         return false;
+    }
+
+    Exit getExit(string direction)
+    {
+        foreach (Exit e in currentRoom.exits)
+        {
+            if (e.direction.ToString() == direction)
+                return e;
+        }
+        return null;
     }
 
     public bool TakeItem(string item)
@@ -70,4 +91,5 @@ public class NavigationManager : MonoBehaviour
         else
             return false;
     }
+
 }
