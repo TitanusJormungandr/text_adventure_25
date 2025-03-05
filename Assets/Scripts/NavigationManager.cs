@@ -10,7 +10,13 @@ public class NavigationManager : MonoBehaviour
     public static NavigationManager instance;
     public Room startingRoom;
     public Room currentRoom;
+    public List<Room> rooms;
+
     public Exit toKeyNorth;
+
+    //new delegate
+    public delegate void GameOver();
+    public event GameOver onGameOver;
 
     private Dictionary<string, Room> exitRooms = new Dictionary<string, Room>();
 
@@ -29,9 +35,9 @@ public class NavigationManager : MonoBehaviour
         //toKeyNorth.isHidden = true;
         //currentRoom = startingRoom;
         //Unpack();
-        ResetGame();
+        //ResetGame();
     }
-    void ResetGame()
+    public void ResetGame()
     {
         toKeyNorth.isHidden = true;
         currentRoom = startingRoom;
@@ -52,6 +58,16 @@ public class NavigationManager : MonoBehaviour
         }
 
         InputManager.instance.UpdateStory(description);
+        if (exitRooms.Count == 0)
+            if (onGameOver != null) // is anyone listening
+                onGameOver(); //invokes the event
+        
+    }
+
+    public void SwitchRooms(Room room)
+    {
+        currentRoom = room;
+        Unpack();
     }
 
     public bool SwitchRooms(string direction)
@@ -90,6 +106,17 @@ public class NavigationManager : MonoBehaviour
         }
         else
             return false;
+    }
+
+    public Room GetRoomFromName(string name)
+    {
+        foreach(Room aRoom in rooms)
+        {
+            if(aRoom.name == name) 
+                return aRoom;
+        }
+
+        return null;
     }
 
 }

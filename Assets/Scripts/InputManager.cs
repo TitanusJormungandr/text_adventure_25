@@ -38,10 +38,17 @@ public class InputManager : MonoBehaviour
         commands.Add("go");
         commands.Add("get");
         commands.Add("restart");
+        commands.Add("save");
 
         userInput.onEndEdit.AddListener(GetInput); //now calls GetInput
         //abutton.onClick.AddListener(DoSomething);
         story = storyText.text;
+        NavigationManager.instance.onGameOver += EndGame; // function to call when event occurs
+    }
+
+    void EndGame()
+    {
+        UpdateStory("\nPlease enter 'restart' to play again. ");
     }
 
     //void DoSomething() //event handler
@@ -93,6 +100,10 @@ public class InputManager : MonoBehaviour
                 {
                     if (OnRestart != null) //if anyone is listening
                         OnRestart();
+                }
+                else if (parts[0] == "save")
+                {
+                    GameManager.instance.Save();
                 }
                 //UpdateStory(msg);
             }
