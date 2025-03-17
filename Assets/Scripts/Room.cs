@@ -12,4 +12,8 @@ public class Room : ScriptableObject
 
     public bool hasKey;
     public bool hasOrb;
+    public bool hasCrystal;
+    public bool hasTopStaff;
+    public bool hasMidStaff;
+    public bool hasEndStaff;
 }
