@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Windows;
+using System.IO;
 
 public class InputManager : MonoBehaviour
 {
@@ -14,12 +15,10 @@ public class InputManager : MonoBehaviour
     public InputField userInput; // the input field object
     public Text inputText; // part of the input field where user enters response
     public Text placeHolderText; // part of the input field for initial placeholder text
-    //public Button abutton;
 
-    //1st step to creating and using delegates
     public delegate void Restart();
     public event Restart OnRestart;
-    
+
     private string story; // holds the story to display
     private List<string> commands = new List<string>(); //valid user commands
 
@@ -39,11 +38,13 @@ public class InputManager : MonoBehaviour
         commands.Add("get");
         commands.Add("restart");
         commands.Add("save");
+        commands.Add("commands");
+        commands.Add("inventory");
 
-        userInput.onEndEdit.AddListener(GetInput); //now calls GetInput
-        //abutton.onClick.AddListener(DoSomething);
+        userInput.onEndEdit.AddListener(GetInput);
         story = storyText.text;
-        NavigationManager.instance.onGameOver += EndGame; // function to call when event occurs
+        NavigationManager.instance.onGameOver += EndGame;
+        LoadInventory(); // Load inventory when the game starts
     }
 
     void EndGame()
@@ -51,15 +52,10 @@ public class InputManager : MonoBehaviour
         UpdateStory("\nPlease enter 'restart' to play again. ");
     }
 
-    //void DoSomething() //event handler
-    //{
-        //Debug.Log("Button clicked!");
-    //}
-
     public void UpdateStory(string msg) //update display
     {
-         story += "\n" + msg;
-         storyText.text = story;
+        story += "\n" + msg;
+        storyText.text = story;
     }
 
     void GetInput(string msg) //process input
@@ -67,19 +63,18 @@ public class InputManager : MonoBehaviour
         if (msg != "")
         {
             char[] splitInfo = { ' ' };
-            string[] parts = msg.ToLower().Split(splitInfo); //['go', 'north']
+            string[] parts = msg.ToLower().Split(splitInfo);
 
             if (commands.Contains(parts[0])) //if valid command
             {
-                if (parts[0] == "go") //wants to switch rooms
+                if (parts[0] == "go")
                 {
-                    if (NavigationManager.instance.SwitchRooms(parts[1])) //returns true if direction exits
+                    if (NavigationManager.instance.SwitchRooms(parts[1]))
                     {
                         //fill in later
                     }
                     else
                     {
-                        //added the "is locked" response
                         UpdateStory("Exit does not exist or is locked. Try again.");
                     }
                 }
@@ -88,28 +83,51 @@ public class InputManager : MonoBehaviour
                     if (NavigationManager.instance.TakeItem(parts[1]))
                     {
                         GameManager.instance.inventory.Add(parts[1]);
+                        SaveInventory(); // Save inventory after adding an item
                         UpdateStory("You added a(n) " + parts[1] + " to your inventory.");
                     }
                     else
                     {
                         UpdateStory("Sorry, " + parts[1] + " does not exist in this room.");
                     }
-
                 }
                 else if (parts[0] == "restart")
                 {
-                    if (OnRestart != null) //if anyone is listening
-                        OnRestart();
+                    OnRestart?.Invoke();
                 }
                 else if (parts[0] == "save")
                 {
                     GameManager.instance.Save();
+                    SaveInventory(); // Ensure inventory is saved
                 }
-                //UpdateStory(msg);
+                else if (parts[0] == "commands") // Handle "commands"
+                {
+                    UpdateStory("Available commands: " + string.Join(", ", commands));
+                }
+                else if (parts[0] == "inventory") // Handle "inventory" 
+                {
+                    List<string> inventory = GameManager.instance.inventory;
+                    string inventoryList = inventory.Count > 0 ? string.Join(", ", inventory) : "Your inventory is empty.";
+                    UpdateStory("Inventory: " + inventoryList);
+                }
             }
-
         }
         userInput.text = ""; //after input from user, reset
         userInput.ActivateInputField();
+    }
+
+    void SaveInventory()
+    {
+        PlayerPrefs.SetString("inventory", string.Join(",", GameManager.instance.inventory));
+        PlayerPrefs.Save();
+    }
+
+    void LoadInventory()
+    {
+        string savedInventory = PlayerPrefs.GetString("inventory", "");
+        if (!string.IsNullOrEmpty(savedInventory))
+        {
+            GameManager.instance.inventory = new List<string>(savedInventory.Split(','));
+        }
     }
 }

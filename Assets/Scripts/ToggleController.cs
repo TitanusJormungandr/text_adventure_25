@@ -41,13 +41,13 @@ public class ToggleController : MonoBehaviour
         PlayerPrefs.SetInt("theme", darkMode ? 1 : 0);
         SetTheme();
     }
-   
+
     void SetTheme()
     {
         if (darkMode)
         {
             background.color = Color.black;
-            displayText.color = Color.white;   
+            displayText.color = Color.white;
             toggleText.color = Color.white;
             placeholderText.color = Color.white;
             playerText.color = Color.white;
@@ -63,3 +63,4 @@ public class ToggleController : MonoBehaviour
     }
 
 }
+
